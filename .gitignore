@@ -5,3 +5,4 @@ code/yolov3.weights
 downloads/yolov3.weights
 __pycache__/
 .DS_Store
+code/3d_points.txt
