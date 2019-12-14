@@ -54,8 +54,8 @@ stereo_camera_baseline_m = 0.2090607502
 # Confidence threshold
 confidence_threshold = 0.5
 
-# Non-maximum supression threshold
-nonmaximum_suspression_threshold = 0.4
+# Non-maximum suppression threshold
+nonmaximum_suppression_threshold = 0.4
 
 # Width of network's input image
 input_width = 416
@@ -79,7 +79,7 @@ pause_playback = False
 ##########################################
 # Initialise variables
 ##########################################
-classes_file =  'coco.names'
+classes_file = 'coco.names'
 config_file = 'yolov3.cfg'
 weights_file = 'yolov3.weights'
 
