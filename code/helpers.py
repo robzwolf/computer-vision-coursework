@@ -16,6 +16,7 @@
 
 import math
 import statistics
+import random
 
 
 def bounding_box_centre(a, b, pixels):
@@ -45,3 +46,31 @@ def get_formatted_median(Z):
         return f'{round(statistics.median(Z), 2)} m'
     else:
         return ''
+
+
+def random_number_between(min, max, integer=True):
+    """
+    Randomly generate a number between min and max, inclusive.
+    @param min: Lower bound (inclusive)
+    @param max: Upper bound (inclusive)
+    @param integer: Whether the returned number should be forced to be an integer or not
+    """
+    value = random.random()
+    random_number = min + (value * (max - min + 1))
+    if integer:
+        return int(random_number)
+    else:
+        return random_number
+
+
+def random_colour():
+    """
+    Generate a random colour.
+    @return: A tuple of (blue, green, red)
+    """
+    darkest = 50
+    lightest = 255
+    red = random_number_between(darkest, lightest)
+    green = random_number_between(darkest, lightest)
+    blue = random_number_between(darkest, lightest)
+    return blue, green, red

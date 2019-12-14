@@ -271,8 +271,9 @@ def loop_through_files():
                 # Convert Z to depth in metres by calculating a median of the middle 30% of box pixels
                 formatted_depth = helpers.get_formatted_median(Z)
 
-                orange = (255, 178, 50)
-                yolo_engine.draw_bounding_box(imgL, classes[class_IDs[i]], confidences[i], left, top, left + width, top + height, orange, formatted_depth)
+                # Colour of the outline box, in Blue, Green, Red format
+                box_outline_colour = helpers.random_colour()
+                yolo_engine.draw_bounding_box(imgL, classes[class_IDs[i]], confidences[i], left, top, left + width, top + height, box_outline_colour, formatted_depth)
 
             cv2.imshow('YOLO Object Detection using OpenCV', imgL)
 
