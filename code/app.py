@@ -128,9 +128,6 @@ def get_disparity(imgL, imgR):
 
     return disparity_scaled
 
-    # Display the image
-    # disparity_engine.display_disparity_window(disparity_scaled, max_disparity)
-
 
 def get_right_filename_from_left(filename_left):
     """
@@ -224,6 +221,9 @@ def loop_through_files():
 
             # Calculate the disparity map
             disparity = get_disparity(imgL, imgR)
+
+            # Display the disparity map as an image
+            disparity_engine.display_disparity_window(disparity, max_disparity)
 
             # Create a 4D tensor (OpenCV 'blob') from image frame (pixels scaled 0 to 1, image resized)
             tensor = cv2.dnn.blobFromImage(imgL, 1 / 255, (input_width, input_height))
