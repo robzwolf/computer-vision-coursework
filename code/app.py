@@ -38,7 +38,7 @@ filename_right_suffix = '_R.png'
 
 # Set a timestamp to start from, or leave it blank to start from the beginning.
 # e.g. set to 1506943191.487683 for the end of the Bailey, just as the vehicle turns
-skip_forward_file_pattern = '1506943946.380279'
+# skip_forward_file_pattern = '1506943946.380279' # Start at final frame
 skip_forward_file_pattern = ''
 
 ##########################################
@@ -197,8 +197,8 @@ def loop_through_files():
         print('#############################################################################')
         print()
         print('Processing:')
-        print('    ' + full_path_filename_left)
-        print('    ' + full_path_filename_right)
+        print(f'    {full_path_filename_left}')
+        print(f'    {full_path_filename_right}')
         print()
 
         # Check the left file is a PNG image
