@@ -14,6 +14,7 @@
 
 import os
 import cv2
+import numpy as np
 
 ############################################################################
 # LOCATION OF DATA SET
@@ -105,45 +106,115 @@ left_file_list = sorted(os.listdir(full_path_directory_left))
 # Breckon et al. 2013]
 stereo_processor = cv2.StereoSGBM_create(0, max_disparity, 21)
 
-##########################################
-# Loop through each image pair
-##########################################
-for filename_left in left_file_list:
 
-    # Skip forward to start a file that was specified by skip_forward_file_pattern,
-    # if this is set.
-    if skip_forward_file_pattern and skip_forward_file_pattern not in filename_left:
-        continue
-    elif skip_forward_file_pattern and skip_forward_file_pattern in filename_left:
-        skip_forward_file_pattern = ''
+def preprocess_image(img):
+    return np.power(img, 0.75).astype('uint8')
 
-    # From the left image, get the corresponding right image
-    filename_right = filename_left.replace(filename_left_suffix, filename_right_suffix)
-    full_path_filename_left = os.path.join(full_path_directory_left, filename_left)
-    full_path_filename_right = os.path.join(full_path_directory_right, filename_right)
 
-    # For sanity, print out these filenames.
-    print('#############################################################################')
-    print()
-    print('Processing:')
-    print('    ' + full_path_filename_left)
-    print('    ' + full_path_filename_right)
-    print()
+def calculate_stereo_disparity(imgL, imgR):
+    # Disparity matching works on greyscale, so start by converting to greyscale.
+    # Do this for both images as they're both given as 3-channel RGB images.
 
-    # Check the left file is a PNG image
-    # And check that a corresponding right image actually exists
+    greyL = cv2.cvtColor(imgL, cv2.COLOR_BGR2GRAY)
+    greyR = cv2.cvtColor(imgR, cv2.COLOR_BGR2GRAY)
 
-    if '.png' in filename_left and os.path.isfile(full_path_filename_right):
 
-        # Read left and right images and display them in windows
-        # N.B. Both are stored as 3-channel (even though one is is greyscale)
-        # RGB images, so we should load both as such.
 
-        imgL = cv2.imread(full_path_filename_left, cv2.IMREAD_COLOR)
-        cv2.imshow('Left Image', imgL)
 
-        imgR = cv2.imread(full_path_filename_right, cv2.IMREAD_COLOR)
-        cv2.imshow('Right image', imgR)
+def get_right_filename_from_left(filename_left):
+    """
+    @param filename_left: Filename for the left image, e.g. 'some_image_L.png'
+    @return: Filename for the right image, based on the suffixes defined in the constants above
+    """
+    return filename_left.replace(filename_left_suffix, filename_right_suffix)
 
-        print('-- Files loaded successfully!')
+
+def get_full_path_filename_left(filename_left):
+    """
+    @param filename_left: Filename for the left image, e.g. 'some_image_L.png'
+    @return: The fully qualified path for the left image
+    """
+    return os.path.join(full_path_directory_left, filename_left)
+
+
+def get_full_path_filename_right(filename_right):
+    """
+    @param filename_right: Filename for the right image, e.g. 'some_image_R.png'
+    @return: The fully qualified path for hte right image
+    """
+    return os.path.join(full_path_directory_right, filename_right)
+
+
+def files_exist_and_are_png(full_path_filename_left, full_path_filename_right):
+    """
+    @param full_path_filename_left: Fully qualified path to the left image
+    @param full_path_filename_right: Fully qualified path to the right image
+    @return: Whether the files exist and are PNG files.
+    """
+    if not full_path_filename_left.endswith('.png'):
+        return False
+
+    if not full_path_filename_right.endswith('.png'):
+        return False
+
+    if not os.path.isfile(full_path_filename_left):
+        return False
+
+    if not os.path.isfile(full_path_filename_right):
+        return False
+
+    return True
+
+
+def loop_through_files():
+    for filename_left in left_file_list:
+
+        # Skip forward to start a file that was specified by skip_forward_file_pattern,
+        # if this is set.
+        if skip_forward_file_pattern and skip_forward_file_pattern not in filename_left:
+            continue
+        elif skip_forward_file_pattern and skip_forward_file_pattern in filename_left:
+            skip_forward_file_pattern = ''
+
+        # From the left image, get the corresponding right image
+        filename_right = get_right_filename_from_left(filename_left)
+
+        # Get the fully qualified paths to the left and right image files
+        full_path_filename_left = get_full_path_filename_left(filename_left)
+        full_path_filename_right = get_full_path_filename_right(filename_right)
+
+        # For sanity, print out these filenames.
+        print('#############################################################################')
         print()
+        print('Processing:')
+        print('    ' + full_path_filename_left)
+        print('    ' + full_path_filename_right)
+        print()
+
+        # Check the left file is a PNG image
+        # And check that a corresponding right image actually exists
+
+        if files_exist_and_are_png(full_path_filename_left, full_path_filename_right):
+
+            # Read left and right images and display them in windows
+            # N.B. Both are stored as 3-channel (even though one is is greyscale)
+            # RGB images, so we should load both as such.
+
+            imgL = cv2.imread(full_path_filename_left, cv2.IMREAD_COLOR)
+            cv2.imshow('Left Image', imgL)
+
+            imgR = cv2.imread(full_path_filename_right, cv2.IMREAD_COLOR)
+            cv2.imshow('Right image', imgR)
+
+            print('-- Files loaded successfully!')
+            print()
+
+            # Calculate and generate the disparity map
+            calculate_stereo_disparity(imgL, imgR)
+
+        else:
+            print('-- Files skipped. Perhaps one is missing, or not PNG.')
+            print()
+
+
+loop_through_files()
