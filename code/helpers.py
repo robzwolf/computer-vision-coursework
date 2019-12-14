@@ -35,7 +35,13 @@ def get_mean_pixels(top, bottom, left, right, threshold=0.3):
 
 
 def get_formatted_median(Z):
-    if Z and statistics.median(Z) < 45:
-        return f'{str(round(statistics.median(Z), 2))} m'
+    """
+    Convert the distance Z into a human-readable string
+    @param Z:
+    @return:
+    """
+    max_distance = 45
+    if Z and statistics.median(Z) < max_distance:
+        return f'{round(statistics.median(Z), 2)} m'
     else:
         return ''

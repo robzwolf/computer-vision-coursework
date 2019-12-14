@@ -209,15 +209,15 @@ def loop_through_files():
 
         if files_exist_and_are_png(full_path_filename_left, full_path_filename_right):
 
-            # Read left and right images and display them in windows
+            # Read left and right images
             # N.B. Both are stored as 3-channel (even though one is is greyscale)
             # RGB images, so we should load both as such.
-
             imgL = cv2.imread(full_path_filename_left, cv2.IMREAD_COLOR)
-            cv2.imshow('Left Image', imgL)
-
             imgR = cv2.imread(full_path_filename_right, cv2.IMREAD_COLOR)
-            cv2.imshow('Right image', imgR)
+
+            # Only display the right image, as the left image will be displayed later after
+            # we draw the boxes and labels on it.
+            cv2.imshow('Right Image', imgR)
 
             print('-- Files loaded successfully!')
             print()
