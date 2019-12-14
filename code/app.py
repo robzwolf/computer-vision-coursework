@@ -12,6 +12,7 @@
 #
 ############################################################################
 
+import disparity_engine
 import os
 import cv2
 import numpy as np
@@ -37,7 +38,8 @@ filename_right_suffix = '_R.png'
 
 # Set a timestamp to start from, or leave it blank to start from the beginning.
 # e.g. set to 1506943191.487683 for the end of the Bailey, just as the vehicle turns
-skip_forward_file_pattern = ''
+skip_forward_file_pattern = '1506943946.380279'
+# skip_forward_file_pattern = ''
 
 ##########################################
 # Constants
@@ -100,25 +102,31 @@ full_path_directory_right = os.path.join(master_path_to_dataset, directory_to_cy
 # Get a list of the left image files and sort them (by timestamp in filename)
 left_file_list = sorted(os.listdir(full_path_directory_left))
 
-# Set up the disparity stereo processor to find a maximum of max_disparity values
-# This uses a modified H. Hisrchmuller algorithm [Hirschmuller, 2008] that differs
-# (see openCV manual). Parameters can be adjusted, these ones are from [Hamilton /
-# Breckon et al. 2013]
-stereo_processor = cv2.StereoSGBM_create(0, max_disparity, 21)
 
+def show_disparity(imgL, imgR):
 
-def preprocess_image(img):
-    return np.power(img, 0.75).astype('uint8')
-
-
-def calculate_stereo_disparity(imgL, imgR):
     # Disparity matching works on greyscale, so start by converting to greyscale.
     # Do this for both images as they're both given as 3-channel RGB images.
+    greyL, greyR = disparity_engine.convert_to_greyscale(imgL, imgR)
 
-    greyL = cv2.cvtColor(imgL, cv2.COLOR_BGR2GRAY)
-    greyR = cv2.cvtColor(imgR, cv2.COLOR_BGR2GRAY)
+    # Perform preprocessing
+    greyL, greyR = disparity_engine.preprocess_images(greyL, greyR)
 
+    # Set up the disparity stereo processor and compute the disparity.
+    disparity = disparity_engine.compute_disparity(greyL, greyR, max_disparity)
 
+    # Filter out noise and speckles
+    disparity_engine.filter_speckles(disparity, max_disparity)
+
+    # Scale the disparity to 8-bit for viewing as an image.
+    disparity_scaled = disparity_engine.scale_disparity_to_8_bit(disparity, max_disparity)
+
+    # If user wants to crop the disparity, then crop out the left side and the car bonnet.
+    if crop_disparity:
+        disparity_scaled = disparity_engine.crop_disparity_map(disparity_scaled)
+
+    # Display the image
+    disparity_engine.display_disparity_window(disparity_scaled, max_disparity)
 
 
 def get_right_filename_from_left(filename_left):
@@ -167,6 +175,8 @@ def files_exist_and_are_png(full_path_filename_left, full_path_filename_right):
 
 
 def loop_through_files():
+    global skip_forward_file_pattern
+
     for filename_left in left_file_list:
 
         # Skip forward to start a file that was specified by skip_forward_file_pattern,
@@ -210,7 +220,7 @@ def loop_through_files():
             print()
 
             # Calculate and generate the disparity map
-            calculate_stereo_disparity(imgL, imgR)
+            show_disparity(imgL, imgR)
 
         else:
             print('-- Files skipped. Perhaps one is missing, or not PNG.')
