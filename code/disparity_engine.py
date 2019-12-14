@@ -1,9 +1,22 @@
+############################################################################
+#
+# This module contains the necessary logic to compute disparity
+# for the given left and right images.
+#
+# Computer Vision Coursework, Software Systems and Applications III
+# Author: vzbf32
+#
+# This work borrows heavily from the examples provided by Toby Breckon:
+# - https://github.com/tobybreckon/stereo-disparity/blob/master/stereo_disparity.py
+# - https://github.com/tobybreckon/stereo-disparity/blob/master/stereo_to_3d.py
+# - https://github.com/tobybreckon/python-examples-cv/blob/master/yolo.py
+# - https://github.com/tobybreckon/python-examples-cv/blob/master/surf_detection.py
+# All retrieved 11th Dec 2019.
+#
+############################################################################
+
 import cv2
 import numpy as np
-
-
-def hello_world():
-    print('Hello, world!')
 
 
 def convert_to_greyscale(imgL, imgR):
@@ -67,11 +80,14 @@ def filter_speckles(disparity, max_disparity):
 
 
 def scale_disparity_to_8_bit(disparity, max_disparity):
-    # Scale the disparity to 8-bit for viewing.
+    """
+    Scales the disparity to 8-bit for viewing.
+    """
+
     # Divide by 16 and convert to 8-bit image. Then, the range of values should
     # be between 0 and max_disparity, but in fact it's -1 to max_disparity - 1).
     # To fix this, we use an initial threshold between 0 and max_disparity, because
-    # disparity = -1 means no disparity is available.
+    # disparity=-1 means no disparity is available.
     _, disparity = cv2.threshold(disparity, 0, max_disparity * 16, cv2.THRESH_TOZERO)
 
     return (disparity / 16.0).astype(np.uint8)
