@@ -128,7 +128,7 @@ def get_outputs_names(net):
     return [layers_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
 
-def setup(config_file, weights_file):
+def setup_net(config_file, weights_file):
 
     # Load configuration and weight files for the model and load the network using them
     net = cv2.dnn.readNetFromDarknet(config_file, weights_file)
@@ -142,10 +142,12 @@ def setup(config_file, weights_file):
     # (It should fail gracefully if OpenCL is not available.)
     net.setPreferableTarget(cv2.dnn.DNN_TARGET_OPENCL)
 
-    # Set up display window name and trackbar
-    window_name = f"Object Detection (YOLOv3) using '{weights_file}'"
-    cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
-    trackbar_name = 'Reporting confidence > (x 0.01)'
-    initial_trackbar_value = 0
-    trackbar_count = 100
-    cv2.createTrackbar(trackbar_name, window_name, initial_trackbar_value, trackbar_count, on_trackbar)
+    # # Set up display window name and trackbar
+    # window_name = f"Object Detection (YOLOv3) using '{weights_file}'"
+    # cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
+    # trackbar_name = 'Reporting confidence > (x 0.01)'
+    # initial_trackbar_value = 0
+    # trackbar_count = 100
+    # cv2.createTrackbar(trackbar_name, window_name, initial_trackbar_value, trackbar_count, on_trackbar)
+
+    return (net, output_layer_names)

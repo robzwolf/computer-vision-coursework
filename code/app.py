@@ -22,6 +22,9 @@ import numpy as np
 ############################################################################
 
 # Change this to specify the location of the master dataset
+import helpers
+import yolo_engine
+
 master_path_to_dataset = '../TTBB-durham-02-10-17-sub10'
 
 # Name of the left images within the master dataset directory
@@ -90,10 +93,8 @@ weights_file = 'yolov3.weights'
 with open(classes_file, 'rt') as f:
     classes = f.read().rstrip('\n').split('\n')
 
-# Set up window
-window_name = "Object Detection (YOLOv3) using '{}'".format(weights_file)
-print(window_name)
-cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
+# Set up network using configuration and weight files for the model
+(net, output_layer_names) = yolo_engine.setup_net(config_file, weights_file)
 
 # Resolve full directory location of data set for left / right images
 full_path_directory_left = os.path.join(master_path_to_dataset, directory_to_cycle_left)
@@ -103,7 +104,7 @@ full_path_directory_right = os.path.join(master_path_to_dataset, directory_to_cy
 left_file_list = sorted(os.listdir(full_path_directory_left))
 
 
-def show_disparity(imgL, imgR):
+def get_disparity(imgL, imgR):
 
     # Disparity matching works on greyscale, so start by converting to greyscale.
     # Do this for both images as they're both given as 3-channel RGB images.
@@ -125,8 +126,10 @@ def show_disparity(imgL, imgR):
     if crop_disparity:
         disparity_scaled = disparity_engine.crop_disparity_map(disparity_scaled)
 
+    return disparity_scaled
+
     # Display the image
-    disparity_engine.display_disparity_window(disparity_scaled, max_disparity)
+    # disparity_engine.display_disparity_window(disparity_scaled, max_disparity)
 
 
 def get_right_filename_from_left(filename_left):
@@ -219,8 +222,60 @@ def loop_through_files():
             print('-- Files loaded successfully!')
             print()
 
-            # Calculate and generate the disparity map
-            show_disparity(imgL, imgR)
+            # Calculate the disparity map
+            disparity = get_disparity(imgL, imgR)
+
+            # Create a 4D tensor (OpenCV 'blob') from image frame (pixels scaled 0 to 1, image resized)
+            tensor = cv2.dnn.blobFromImage(imgL, 1 / 255, (input_width, input_height))
+
+            # Set the input to the CNN network
+            net.setInput(tensor)
+
+            # Run forward inference to get output of the final output layers
+            results = net.forward(output_layer_names)
+
+            # Remove the bounding boxes with lower confidence
+            # confidence_threshold = cv2.getTrackbarPos() ## Should consider adding slider functionality back
+            class_IDs, confidences, boxes = yolo_engine.postprocess(imgL, results, confidence_threshold, nonmaximum_suppression_threshold)
+
+            # Get indices
+            indices = cv2.dnn.NMSBoxes(boxes, confidences, confidence_threshold, nonmaximum_suppression_threshold)
+            for i in indices:
+                i = i[0]
+                box = boxes[i]
+                left = box[0]
+                top = box[1]
+                width = box[2]
+                height = box[3]
+
+                # Calculate coordinates of (x,y) and select 30% in the middle
+                size = helpers.get_mean_pixels(top, top + height, left, left + width) / 2
+                horizontal_start, horizontal_end = helpers.bounding_box_centre(left, left + width, size)
+                vertical_start, vertical_end = helpers.bounding_box_centre(top, top + height, size)
+
+                # Let's calculate Z (depth of an object)
+                # Z = f * B / disparity(x,y)
+                Z = []
+
+                # Loop through all pixels and calculate Z, taking into account focal length and baseline
+                for x in range(horizontal_start, horizontal_end):
+                    for y in range(vertical_start, vertical_end):
+                        try:
+                            if (disparity[y, x] > 0):
+                                Z_single = (camera_focal_length_px * stereo_camera_baseline_m) / disparity[y, x]
+                                Z.append(Z_single)
+                        except IndexError:
+                            # If we couldn't access disparity[y, x] for some reason, just continue
+                            continue
+
+                # Convert Z to depth in metres by calculating a median of the middle 30% of box pixels
+                formatted_depth = helpers.get_formatted_median(Z)
+
+                orange = (255, 178, 50)
+                yolo_engine.draw_bounding_box(imgL, class_IDs[i], confidences[i], left, top, left + width, top + height, orange, formatted_depth)
+
+            cv2.imshow('YOLO Object Detection using OpenCV', imgL)
+
 
             # Wait 40ms (i.e. 1000 ms / 25 fps = 40 ms)
             key = cv2.waitKey(40 * (not pause_playback)) & 0xFF
