@@ -261,7 +261,7 @@ def loop_through_files():
                 for x in range(horizontal_start, horizontal_end):
                     for y in range(vertical_start, vertical_end):
                         try:
-                            if (disparity[y, x] > 0):
+                            if disparity[y, x] > 0:
                                 Z_single = (camera_focal_length_px * stereo_camera_baseline_m) / disparity[y, x]
                                 Z.append(Z_single)
                         except IndexError:
@@ -272,14 +272,13 @@ def loop_through_files():
                 formatted_depth = helpers.get_formatted_median(Z)
 
                 orange = (255, 178, 50)
-                yolo_engine.draw_bounding_box(imgL, class_IDs[i], confidences[i], left, top, left + width, top + height, orange, formatted_depth)
+                yolo_engine.draw_bounding_box(imgL, classes[class_IDs[i]], confidences[i], left, top, left + width, top + height, orange, formatted_depth)
 
             cv2.imshow('YOLO Object Detection using OpenCV', imgL)
 
-
             # Wait 40ms (i.e. 1000 ms / 25 fps = 40 ms)
             key = cv2.waitKey(40 * (not pause_playback)) & 0xFF
-            if key == ord('x'):
+            if key == ord('x') or key == ord('q'):
                 # Exit
                 print('Exiting...')
                 break
@@ -303,6 +302,9 @@ def loop_through_files():
         else:
             print('-- Files skipped. Perhaps one is missing, or not PNG.')
             print()
+
+    # Close all windows
+    cv2.destroyAllWindows()
 
 
 loop_through_files()

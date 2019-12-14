@@ -47,7 +47,8 @@ def draw_bounding_box(output_image, class_name, confidence, left, top, right, bo
 
     font_scale = 0.5
     font_thickness = 1
-    label_size, base_line = cv2.getTextSize(label_text, cv2.FONT_HERSHEY_DUPLEX, font_scale, font_thickness)
+    font_name = cv2.FONT_HERSHEY_SIMPLEX
+    label_size, base_line = cv2.getTextSize(label_text, font_name, font_scale, font_thickness)
     top = max(top, label_size[1])
 
     # Draw label background
@@ -57,7 +58,7 @@ def draw_bounding_box(output_image, class_name, confidence, left, top, right, bo
 
     # Draw the actual label text
     black = (0, 0, 0)
-    cv2.putText(output_image, label_text, (left, top), cv2.FONT_HERSHEY_DUPLEX, font_scale, black, font_thickness)
+    cv2.putText(output_image, label_text, (left, top), font_name, font_scale, black, font_thickness)
 
 
 def postprocess(image, results, threshold_confidence, threshold_nms):
