@@ -39,7 +39,7 @@ filename_right_suffix = '_R.png'
 # Set a timestamp to start from, or leave it blank to start from the beginning.
 # e.g. set to 1506943191.487683 for the end of the Bailey, just as the vehicle turns
 skip_forward_file_pattern = '1506943946.380279'
-# skip_forward_file_pattern = ''
+skip_forward_file_pattern = ''
 
 ##########################################
 # Constants
@@ -175,7 +175,7 @@ def files_exist_and_are_png(full_path_filename_left, full_path_filename_right):
 
 
 def loop_through_files():
-    global skip_forward_file_pattern
+    global skip_forward_file_pattern, crop_disparity, pause_playback
 
     for filename_left in left_file_list:
 
@@ -221,6 +221,29 @@ def loop_through_files():
 
             # Calculate and generate the disparity map
             show_disparity(imgL, imgR)
+
+            # Wait 40ms (i.e. 1000 ms / 25 fps = 40 ms)
+            key = cv2.waitKey(40 * (not pause_playback)) & 0xFF
+            if key == ord('x'):
+                # Exit
+                print('Exiting...')
+                break
+            elif key == ord('c'):
+                # Toggle cropping
+                if crop_disparity == True:
+                    print('Disabled crop.')
+                    crop_disparity = False
+                else:
+                    print('Enabled crop.')
+                    crop_disparity = True
+            elif key == ord(' '):
+                # Pause (on next frame)
+                if pause_playback == True:
+                    print('Resumed playback.')
+                    pause_playback = False
+                else:
+                    print('Paused playback.')
+                    pause_playback = True
 
         else:
             print('-- Files skipped. Perhaps one is missing, or not PNG.')
