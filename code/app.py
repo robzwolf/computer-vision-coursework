@@ -61,7 +61,7 @@ stereo_camera_baseline_m = 0.2090607502
 confidence_threshold = 0.5
 
 # Non-maximum suppression threshold
-nonmaximum_suppression_threshold = 0.4
+nms_threshold = 0.4
 
 # Width of network's input image
 input_width = 416
@@ -105,6 +105,16 @@ left_file_list = sorted(os.listdir(full_path_directory_left))
 
 
 def get_disparity(imgL, imgR):
+    """
+    Produce a disparity map for the two images.
+    Take a left image and a right image, and using the methods in disparity_engine,
+    and the stereo processor in OpenCV (specifically, a modified version of the H.
+    Hirschmuller algorithm [Hirschmuller, 2008]), calculate a disparity map and
+    return it.
+    @param imgL: The left image
+    @param imgR: The right image
+    @return: The disparity map
+    """
 
     # Disparity matching works on greyscale, so start by converting to greyscale.
     # Do this for both images as they're both given as 3-channel RGB images.
@@ -177,6 +187,8 @@ def files_exist_and_are_png(full_path_filename_left, full_path_filename_right):
 def loop_through_files():
     global skip_forward_file_pattern, crop_disparity, pause_playback
 
+    # Loop through every file the directory for the left images, and process it and display
+    # the relevant windows.
     for filename_left in left_file_list:
 
         # Skip forward to start a file that was specified by skip_forward_file_pattern,
@@ -203,27 +215,22 @@ def loop_through_files():
 
         # Check the left file is a PNG image
         # And check that a corresponding right image actually exists
-
         if files_exist_and_are_png(full_path_filename_left, full_path_filename_right):
 
-            # Read left and right images
+            # Read left and right images.
             # N.B. Both are stored as 3-channel (even though one is is greyscale)
             # RGB images, so we should load both as such.
             imgL = cv2.imread(full_path_filename_left, cv2.IMREAD_COLOR)
             imgR = cv2.imread(full_path_filename_right, cv2.IMREAD_COLOR)
 
-            # Only display the right image, as the left image will be displayed later after
-            # we draw the boxes and labels on it.
-            cv2.imshow('Right Image', imgR)
-
             print('-- Files loaded successfully!')
             print()
 
             # Calculate the disparity map
-            disparity = get_disparity(imgL, imgR)
+            disparity_map = get_disparity(imgL, imgR)
 
             # Display the disparity map as an image
-            disparity_engine.display_disparity_window(disparity, max_disparity)
+            disparity_engine.display_disparity_window(disparity_map, max_disparity)
 
             # Create a 4D tensor (OpenCV 'blob') from image frame (pixels scaled 0 to 1, image resized)
             tensor = cv2.dnn.blobFromImage(imgL, 1 / 255, (input_width, input_height))
@@ -236,10 +243,10 @@ def loop_through_files():
 
             # Remove the bounding boxes with lower confidence
             # confidence_threshold = cv2.getTrackbarPos() ## Should consider adding slider functionality back
-            class_IDs, confidences, boxes = yolo_engine.postprocess(imgL, results, confidence_threshold, nonmaximum_suppression_threshold)
+            class_IDs, confidences, boxes = yolo_engine.postprocess(imgL, results, confidence_threshold, nms_threshold)
 
-            # Get indices
-            indices = cv2.dnn.NMSBoxes(boxes, confidences, confidence_threshold, nonmaximum_suppression_threshold)
+            # Get indices (objects) and draw info and distance label for each one
+            indices = cv2.dnn.NMSBoxes(boxes, confidences, confidence_threshold, nms_threshold)
             for i in indices:
                 i = i[0]
                 box = boxes[i]
@@ -248,44 +255,47 @@ def loop_through_files():
                 width = box[2]
                 height = box[3]
 
-                # Calculate coordinates of (x,y) and select 30% in the middle
+                # Calculate coordinates of object (x,y) and select mean pixels in the middle
                 size = helpers.get_mean_pixels(top, top + height, left, left + width) / 2
-                horizontal_start, horizontal_end = helpers.bounding_box_centre(left, left + width, size)
-                vertical_start, vertical_end = helpers.bounding_box_centre(top, top + height, size)
+                x_start, x_end = helpers.bounding_box_centre(left, left + width, size)
+                y_start, y_end = helpers.bounding_box_centre(top, top + height, size)
 
-                # Let's calculate Z (depth of an object)
-                # Z = f * B / disparity(x,y)
+                # Let's calculate Z (depth of an object) for each pixel
+                # From the lecture slides, Z = f * B / disparity_map(x,y)
                 Z = []
 
                 # Loop through all pixels and calculate Z, taking into account focal length and baseline
-                for x in range(horizontal_start, horizontal_end):
-                    for y in range(vertical_start, vertical_end):
+                for x in range(x_start, x_end):
+                    for y in range(y_start, y_end):
                         try:
-                            if disparity[y, x] > 0:
-                                Z_single = (camera_focal_length_px * stereo_camera_baseline_m) / disparity[y, x]
+                            if disparity_map[y][x] > 0:
+                                Z_single = (camera_focal_length_px * stereo_camera_baseline_m) / disparity_map[y][x]
                                 Z.append(Z_single)
                         except IndexError:
-                            # If we couldn't access disparity[y, x] for some reason, just continue
+                            # If we couldn't access disparity_map[y][x] for some reason, just continue to the next pixel
                             continue
 
-                # Convert Z to depth in metres by calculating a median of the middle 30% of box pixels
+                # Convert Z to a formatted number calculating a median of the middle portion of box pixels
                 formatted_depth = helpers.get_formatted_median(Z)
 
                 # Colour of the outline box, in Blue, Green, Red format
                 box_outline_colour = helpers.random_colour()
-                yolo_engine.draw_bounding_box(imgL, classes[class_IDs[i]], confidences[i], left, top, left + width, top + height, box_outline_colour, formatted_depth)
 
-            cv2.imshow('YOLO Object Detection using OpenCV', imgL)
+                # Draw the bounding box for the detected object
+                yolo_engine.draw_bounding_box(imgL, classes[class_IDs[i]], confidences[i], left, top, left + width,
+                                              top + height, box_outline_colour, formatted_depth)
+
+            cv2.imshow(f'YOLOv3 Object Detection using "{weights_file}"', imgL)
 
             # Wait 40ms (i.e. 1000 ms / 25 fps = 40 ms)
             key = cv2.waitKey(40 * (not pause_playback)) & 0xFF
             if key == ord('x') or key == ord('q'):
-                # Exit
+                # Exit application
                 print('Exiting...')
                 break
             elif key == ord('c'):
-                # Toggle cropping
-                if crop_disparity == True:
+                # Toggle cropping disparity_map map
+                if crop_disparity:
                     print('Disabled crop.')
                     crop_disparity = False
                 else:
@@ -293,7 +303,7 @@ def loop_through_files():
                     crop_disparity = True
             elif key == ord(' '):
                 # Pause (on next frame)
-                if pause_playback == True:
+                if pause_playback:
                     print('Resumed playback.')
                     pause_playback = False
                 else:
