@@ -92,6 +92,15 @@ def display_disparity_window(disparity_scaled):
     cv2.imshow('Disparity', disparity_to_display)
 
 
+def bilateral_filter(disparity_scaled):
+    """
+    Apply bilateral filtering to the scaled disparity map.
+    It removes noise while keeping edges sharp.
+    """
+    sigma = 5
+    return cv2.bilateralFilter(disparity_scaled, 5, sigma, sigma)
+
+
 def get_disparity(imgL, imgR, crop_disparity):
     """
     Produce a disparity map for the two images.
@@ -121,6 +130,9 @@ def get_disparity(imgL, imgR, crop_disparity):
 
     # Scale the disparity to 8-bit for viewing as an image.
     disparity_scaled = scale_disparity_to_8_bit(disparity)
+
+    # Apply bilateral filtereing
+    disparity_scaled = bilateral_filter(disparity_scaled)
 
     # If user wants to crop the disparity, then crop out the left side and the car bonnet.
     if crop_disparity:
