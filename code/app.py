@@ -72,10 +72,6 @@ input_height = 416
 # Playback Controls
 ##########################################
 
-# Display full (False) or cropped (True) disparity image
-# - Default to cropped so that we don't try to compute disparity for the car bonnet or the sky
-crop_disparity = True
-
 # Pause until key press after each image
 pause_playback = False
 
@@ -147,7 +143,7 @@ def files_exist_and_are_png(full_path_filename_left, full_path_filename_right):
 
 
 def loop_through_files():
-    global skip_forward_file_pattern, crop_disparity, pause_playback
+    global skip_forward_file_pattern, pause_playback
 
     # Loop through every file the directory for the left images, and process it and display
     # the relevant windows.
@@ -193,7 +189,7 @@ def loop_through_files():
             cropped_imgR = preprocessor.preprocess_image_crop_irrelevant_regions(imgR)
 
             # Calculate the disparity map
-            disparity_map = disparity_engine.get_disparity(cropped_imgL, cropped_imgR, crop_disparity)
+            disparity_map = disparity_engine.get_disparity(cropped_imgL, cropped_imgR)
 
             # Display the disparity map as an image
             disparity_engine.display_disparity_window(disparity_map)
@@ -264,14 +260,6 @@ def loop_through_files():
                 # Exit application
                 print('Exiting...')
                 break
-            elif key == ord('c'):
-                # Toggle cropping disparity_map map
-                if crop_disparity:
-                    print('Disabled crop.')
-                    crop_disparity = False
-                else:
-                    print('Enabled crop.')
-                    crop_disparity = True
             elif key == ord(' '):
                 # Pause (on next frame)
                 if pause_playback:

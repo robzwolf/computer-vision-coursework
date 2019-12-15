@@ -101,7 +101,7 @@ def bilateral_filter(disparity_scaled):
     return cv2.bilateralFilter(disparity_scaled, 5, sigma, sigma)
 
 
-def get_disparity(imgL, imgR, crop_disparity):
+def get_disparity(imgL, imgR):
     """
     Produce a disparity map for the two images.
     Take a left image and a right image, and using the methods in disparity_engine,
@@ -110,7 +110,6 @@ def get_disparity(imgL, imgR, crop_disparity):
     return it.
     @param imgL: The left image
     @param imgR: The right image
-    @param crop_disparity: Whether we should crop the left side off the disparity
     @return: The disparity map
     """
 
@@ -134,8 +133,7 @@ def get_disparity(imgL, imgR, crop_disparity):
     # Apply bilateral filtereing
     disparity_scaled = bilateral_filter(disparity_scaled)
 
-    # If user wants to crop the disparity, then crop out the left side and the car bonnet.
-    if crop_disparity:
-        disparity_scaled = crop_disparity_map(disparity_scaled)
+    # Crop out the left side where is no disparity
+    disparity_scaled = crop_disparity_map(disparity_scaled)
 
     return disparity_scaled
