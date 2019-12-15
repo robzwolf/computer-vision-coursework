@@ -39,7 +39,7 @@ def draw_bounding_box(output_image, class_name, confidence, left, top, right, bo
     cv2.rectangle(output_image, (left, top), (right, bottom), colour, box_thickness)
 
     # Construct label
-    label_text = f'{class_name}: {depth}'
+    label_text = f'{class_name} ({round(confidence * 100, 0)}%): {depth}'
 
     font_scale = 0.5
     font_thickness = 1
