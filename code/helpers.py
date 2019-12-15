@@ -26,7 +26,7 @@ def bounding_box_centre(a, b, pixels):
     return math.ceil( (a+b) // 2 - pixels ), math.ceil( (a+b) // 2 + pixels )
 
 
-def get_mean_pixels(top, bottom, left, right, threshold=0.3):
+def get_mean_pixels(top, bottom, left, right, threshold=0.4):
     """
     Get {threshold}*100 % of the box in the middle
     """
