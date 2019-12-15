@@ -20,9 +20,9 @@ import numpy as np
 import helpers
 
 
-def preprocess_image(img):
+def preprocess_image_for_disparity(img):
     """
-    Perform relevant pre-processing steps to the image before calculating the disparity.
+    Perform relevant pre-processing steps to the image to improve the disparity map.
     """
 
     # Raise each pixel to a power.
@@ -34,15 +34,15 @@ def preprocess_image(img):
     return img
 
 
-def preprocess_images(imgL, imgR):
+def preprocess_image_for_yolo(img):
     """
-    Perform relevant pre-processing steps to the images
-    before calculating the disparity.
+    Perform relevant pre-processing steps to the image to improve object detection and classification.
     """
-    imgL = preprocess_image(np.copy(imgL))
-    imgR = preprocess_image(np.copy(imgR))
 
-    return imgL, imgR
+    # Raise each pixel to a power.
+    # img = preprocess_image_power(img)
+
+    return img
 
 
 def preprocess_equalise_histogram(img):

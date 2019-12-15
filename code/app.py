@@ -121,8 +121,9 @@ def get_disparity(imgL, imgR):
     # Do this for both images as they're both given as 3-channel RGB images.
     greyL, greyR = helpers.convert_to_greyscale(imgL, imgR)
 
-    # Perform preprocessing
-    greyL, greyR = preprocessor.preprocess_images(greyL, greyR)
+    # Perform pre-processing
+    greyL = preprocessor.preprocess_image_for_disparity(greyL)
+    greyR = preprocessor.preprocess_image_for_disparity(greyR)
 
     # Set up the disparity stereo processor and compute the disparity.
     disparity = disparity_engine.compute_disparity(greyL, greyR, max_disparity)
@@ -237,8 +238,10 @@ def loop_through_files():
             # Display the disparity map as an image
             disparity_engine.display_disparity_window(disparity_map)
 
+            preprocessed_cropped_imgL = preprocessor.preprocess_image_for_yolo(cropped_imgL)
+
             # Create a 4D tensor (OpenCV 'blob') from image frame (pixels scaled 0 to 1, image resized)
-            tensor = cv2.dnn.blobFromImage(cropped_imgL, 1 / 255, (input_width, input_height))
+            tensor = cv2.dnn.blobFromImage(preprocessed_cropped_imgL, 1 / 255, (input_width, input_height))
 
             # Set the input to the CNN network
             net.setInput(tensor)
@@ -247,8 +250,7 @@ def loop_through_files():
             results = net.forward(output_layer_names)
 
             # Remove the bounding boxes with lower confidence
-            # confidence_threshold = cv2.getTrackbarPos() ## Should consider adding slider functionality back
-            class_IDs, confidences, boxes = yolo_engine.postprocess(cropped_imgL, results, confidence_threshold, nms_threshold)
+            class_IDs, confidences, boxes = yolo_engine.postprocess(preprocessed_cropped_imgL, results, confidence_threshold, nms_threshold)
 
             # Get indices (objects) and draw info and distance label for each one
             indices = cv2.dnn.NMSBoxes(boxes, confidences, confidence_threshold, nms_threshold)
