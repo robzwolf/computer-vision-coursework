@@ -21,10 +21,6 @@ import cv2
 import numpy as np
 
 
-def on_trackbar(val):
-    pass
-
-
 def draw_bounding_box(output_image, class_name, confidence, left, top, right, bottom, colour, depth):
     """
     Draw the predicted bounding box on the specified image.
@@ -130,6 +126,9 @@ def get_outputs_names(net):
 
 
 def setup_net(config_file, weights_file):
+    """
+    Perform the necessary steps to set up the net.
+    """
 
     # Load configuration and weight files for the model and load the network using them
     net = cv2.dnn.readNetFromDarknet(config_file, weights_file)
@@ -143,12 +142,4 @@ def setup_net(config_file, weights_file):
     # (It should fail gracefully if OpenCL is not available.)
     net.setPreferableTarget(cv2.dnn.DNN_TARGET_OPENCL)
 
-    # # Set up display window name and trackbar
-    # window_name = f"Object Detection (YOLOv3) using '{weights_file}'"
-    # cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
-    # trackbar_name = 'Reporting confidence > (x 0.01)'
-    # initial_trackbar_value = 0
-    # trackbar_count = 100
-    # cv2.createTrackbar(trackbar_name, window_name, initial_trackbar_value, trackbar_count, on_trackbar)
-
-    return (net, output_layer_names)
+    return net, output_layer_names
