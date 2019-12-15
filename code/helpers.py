@@ -41,6 +41,8 @@ def get_formatted_median(Z):
     @param Z:
     @return:
     """
+    # Only display the distance if it is less than max_distance, to avoid giving inaccurate measurements for
+    # objects that are a long way from the camera.
     max_distance = 45
     if Z and statistics.median(Z) < max_distance:
         return f'{round(statistics.median(Z), 2)} m'
