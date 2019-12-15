@@ -233,8 +233,11 @@ def loop_through_files():
             # Display the disparity map as an image
             disparity_engine.display_disparity_window(disparity_map, max_disparity)
 
+            # Crop main image so we only detect objects in the uncropped area
+            cropped_imgL = helpers.preprocess_image_crop_irrelevant_regions(imgL)
+
             # Create a 4D tensor (OpenCV 'blob') from image frame (pixels scaled 0 to 1, image resized)
-            tensor = cv2.dnn.blobFromImage(imgL, 1 / 255, (input_width, input_height))
+            tensor = cv2.dnn.blobFromImage(cropped_imgL, 1 / 255, (input_width, input_height))
 
             # Set the input to the CNN network
             net.setInput(tensor)
@@ -244,7 +247,7 @@ def loop_through_files():
 
             # Remove the bounding boxes with lower confidence
             # confidence_threshold = cv2.getTrackbarPos() ## Should consider adding slider functionality back
-            class_IDs, confidences, boxes = yolo_engine.postprocess(imgL, results, confidence_threshold, nms_threshold)
+            class_IDs, confidences, boxes = yolo_engine.postprocess(cropped_imgL, results, confidence_threshold, nms_threshold)
 
             # Get indices (objects) and draw info and distance label for each one
             indices = cv2.dnn.NMSBoxes(boxes, confidences, confidence_threshold, nms_threshold)
@@ -273,8 +276,9 @@ def loop_through_files():
                                 Z_single = (camera_focal_length_px * stereo_camera_baseline_m) / disparity_map[y][x]
                                 Z.append(Z_single)
                         except IndexError:
-                            # If we couldn't access disparity_map[y][x] for some reason, just continue to the next pixel
-                            # We'd get an IndexError if we're accessing a part of the disparity map that's cropped out.
+                            # If we couldn't access disparity_map[y][x] for some reason, just continue to the next
+                            # pixel. We'll get an IndexError if we're accessing a part of the disparity map that's
+                            # cropped out.
                             continue
 
                 # Convert Z to a formatted number calculating a median of the middle portion of box pixels
@@ -283,9 +287,11 @@ def loop_through_files():
                 # Colour of the outline box, in Blue, Green, Red format
                 box_outline_colour = helpers.random_colour()
 
-                # Draw the bounding box for the detected object
-                yolo_engine.draw_bounding_box(imgL, classes[class_IDs[i]], confidences[i], left, top, left + width,
-                                              top + height, box_outline_colour, formatted_depth)
+                # Draw the bounding box for the detected object.
+                # Make sure to shift the boxes back down by the amount we cropped from the top of the original imgL.
+                yolo_engine.draw_bounding_box(imgL, classes[class_IDs[i]], confidences[i], left, top + helpers.crop_top,
+                                              left + width, top + height + helpers.crop_top, box_outline_colour,
+                                              formatted_depth)
 
             cv2.imshow(f'YOLOv3 Object Detection using "{weights_file}"', imgL)
 

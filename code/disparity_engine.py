@@ -17,6 +17,7 @@
 
 import cv2
 import numpy as np
+import helpers
 
 
 def convert_to_greyscale(imgL, imgR):
@@ -40,13 +41,6 @@ def preprocess_image_power(img, power=0.75):
     return np.power(img, power).astype('uint8')
 
 
-def preprocess_image_crop_irrelevant_regions(img):
-    """
-    Crop out the sky (80) and the bonnet of the car (390).
-    """
-    return img[80:390]
-
-
 def preprocess_images(greyL, greyR):
     """
     Perform relevant preprocessing steps to the greyscale images
@@ -55,8 +49,8 @@ def preprocess_images(greyL, greyR):
     greyL = preprocess_image_power(greyL)
     greyR = preprocess_image_power(greyR)
 
-    greyL = preprocess_image_crop_irrelevant_regions(greyL)
-    greyR = preprocess_image_crop_irrelevant_regions(greyR)
+    greyL = helpers.preprocess_image_crop_irrelevant_regions(greyL)
+    greyR = helpers.preprocess_image_crop_irrelevant_regions(greyR)
 
     return greyL, greyR
 

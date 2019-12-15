@@ -19,6 +19,17 @@ import statistics
 import random
 
 
+######################
+# Important Constants
+######################
+
+# Crop out the sky
+crop_top = 80
+
+# Crop out the bonnet of the car
+crop_bottom = 390
+
+
 def bounding_box_centre(a, b, pixels):
     """
     Extract horizontal/vertical centre co-ordinates.
@@ -76,3 +87,10 @@ def random_colour():
     green = random_number_between(darkest, lightest)
     blue = random_number_between(darkest, lightest)
     return blue, green, red
+
+
+def preprocess_image_crop_irrelevant_regions(img):
+    """
+    Crop out regions of the image where we shouldn't perform processing.
+    """
+    return img[crop_top:crop_bottom]
