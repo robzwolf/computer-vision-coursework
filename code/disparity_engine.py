@@ -105,10 +105,14 @@ def crop_disparity_map(disparity_scaled):
     return disparity_scaled[:,135:]
 
 
-def display_disparity_window(disparity_scaled, max_disparity):
+def display_disparity_window(disparity_scaled):
     """
     Display the image. Scale it to the full 0 to 255 range based on the
     number of disparities in use for the stereo part.
     """
-    disparity_to_display = (disparity_scaled * (256.0 / max_disparity)).astype(np.uint8)
+    disparity_to_display = np.copy(disparity_scaled)
+
+    # Normalise the image so that we use the full range of 0 to 255
+    cv2.normalize(disparity_scaled, disparity_to_display, 0, 255, cv2.NORM_MINMAX)
+
     cv2.imshow('Disparity', disparity_to_display)

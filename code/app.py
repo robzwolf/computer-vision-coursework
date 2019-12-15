@@ -70,7 +70,8 @@ input_width = 416
 input_height = 416
 
 # Maximum allowable disparity
-max_disparity = 128
+# Must be a multiple of 16
+max_disparity = 192
 
 ##########################################
 # Playback Controls
@@ -231,7 +232,7 @@ def loop_through_files():
             disparity_map = get_disparity(imgL, imgR)
 
             # Display the disparity map as an image
-            disparity_engine.display_disparity_window(disparity_map, max_disparity)
+            disparity_engine.display_disparity_window(disparity_map)
 
             # Crop main image so we only detect objects in the uncropped area
             cropped_imgL = helpers.preprocess_image_crop_irrelevant_regions(imgL)
