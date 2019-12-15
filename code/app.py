@@ -19,6 +19,8 @@ import helpers
 import preprocessor
 import yolo_engine
 
+print('Loading... This can take a few seconds on some machines.')
+
 ############################################################################
 # LOCATION OF DATA SET
 ############################################################################
@@ -183,6 +185,9 @@ def loop_through_files():
 
             print('-- Files loaded successfully!')
             print()
+            print('At any point, press the following keys to control playback:')
+            print('    (x) or (q) - quit')
+            print('    (space)    - play/pause playback')
 
             # Crop main image so we only detect objects in the uncropped area
             cropped_imgL = preprocessor.preprocess_image_crop_irrelevant_regions(imgL)
