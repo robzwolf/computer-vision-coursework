@@ -3,6 +3,8 @@
 # Computer Vision Coursework, Software Systems and Applications III
 # Author: vzbf32
 #
+# TO RUN THIS FILE (after installing / activating OpenCV): python3 app.py
+#
 # This work borrows heavily from the examples provided by Toby Breckon:
 # - https://github.com/tobybreckon/stereo-disparity/blob/master/stereo_disparity.py
 # - https://github.com/tobybreckon/stereo-disparity/blob/master/stereo_to_3d.py
@@ -26,7 +28,7 @@ print('Loading... This can take a few seconds on some machines.')
 ############################################################################
 
 # Change this to specify the location of the master dataset
-master_path_to_dataset = '../../TTBB-durham-02-10-17-sub10'
+master_path_to_dataset = '../TTBB-durham-02-10-17-sub10'
 
 # Name of the left images within the master dataset directory
 directory_to_cycle_left = 'left-images'

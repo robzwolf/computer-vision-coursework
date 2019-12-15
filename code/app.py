@@ -3,6 +3,8 @@
 # Computer Vision Coursework, Software Systems and Applications III
 # Author: vzbf32
 #
+# TO RUN THIS FILE (after installing / activating OpenCV): python3 app.py
+#
 # This work borrows heavily from the examples provided by Toby Breckon:
 # - https://github.com/tobybreckon/stereo-disparity/blob/master/stereo_disparity.py
 # - https://github.com/tobybreckon/stereo-disparity/blob/master/stereo_to_3d.py
