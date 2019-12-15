@@ -17,23 +17,32 @@
 
 import cv2
 import numpy as np
-
 import helpers
-from helpers import crop_top, crop_bottom
 
 
-def preprocess_images(greyL, greyR):
+def preprocess_image(img):
     """
-    Perform relevant preprocessing steps to the greyscale images
+    Perform relevant pre-processing steps to the image before calculating the disparity.
+    """
+
+    # Raise each pixel to a power.
+    img = preprocess_image_power(img)
+
+    # Equalise histogram for image
+    img = preprocess_equalise_histogram(img)
+
+    return img
+
+
+def preprocess_images(imgL, imgR):
+    """
+    Perform relevant pre-processing steps to the images
     before calculating the disparity.
     """
-    greyL = preprocess_image_power(greyL)
-    greyR = preprocess_image_power(greyR)
+    imgL = preprocess_image(np.copy(imgL))
+    imgR = preprocess_image(np.copy(imgR))
 
-    greyL = preprocess_equalise_histogram(greyL)
-    greyR = preprocess_equalise_histogram(greyR)
-
-    return greyL, greyR
+    return imgL, imgR
 
 
 def preprocess_equalise_histogram(img):
@@ -57,4 +66,4 @@ def preprocess_image_crop_irrelevant_regions(img):
     """
     Crop out regions of the image where we shouldn't perform processing.
     """
-    return img[crop_top:crop_bottom]
+    return img[helpers.crop_top:helpers.crop_bottom]

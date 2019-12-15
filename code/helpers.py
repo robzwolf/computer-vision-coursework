@@ -17,6 +17,7 @@
 import math
 import statistics
 import random
+import cv2
 
 
 ######################
@@ -89,3 +90,11 @@ def random_colour():
     return blue, green, red
 
 
+def convert_to_greyscale(imgL, imgR):
+    """
+    Convert images from 3-channel RGB to greyscale.
+    """
+    greyL = cv2.cvtColor(imgL, cv2.COLOR_BGR2GRAY)
+    greyR = cv2.cvtColor(imgR, cv2.COLOR_BGR2GRAY)
+
+    return greyL, greyR

@@ -119,7 +119,7 @@ def get_disparity(imgL, imgR):
 
     # Disparity matching works on greyscale, so start by converting to greyscale.
     # Do this for both images as they're both given as 3-channel RGB images.
-    greyL, greyR = disparity_engine.convert_to_greyscale(imgL, imgR)
+    greyL, greyR = helpers.convert_to_greyscale(imgL, imgR)
 
     # Perform preprocessing
     greyL, greyR = preprocessor.preprocess_images(greyL, greyR)

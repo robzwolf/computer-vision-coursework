@@ -19,16 +19,6 @@ import cv2
 import numpy as np
 
 
-def convert_to_greyscale(imgL, imgR):
-    """
-    Convert images from 3-channel RGB to greyscale.
-    """
-    greyL = cv2.cvtColor(imgL, cv2.COLOR_BGR2GRAY)
-    greyR = cv2.cvtColor(imgR, cv2.COLOR_BGR2GRAY)
-
-    return greyL, greyR
-
-
 def compute_disparity(greyL, greyR, max_disparity):
     """
     Set up the disparity stereo processor and compute the disparity image.
