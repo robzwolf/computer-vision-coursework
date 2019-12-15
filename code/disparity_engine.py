@@ -40,6 +40,13 @@ def preprocess_image_power(img, power=0.75):
     return np.power(img, power).astype('uint8')
 
 
+def preprocess_image_crop_irrelevant_regions(img):
+    """
+    Crop out the sky (80) and the bonnet of the car (390).
+    """
+    return img[80:390]
+
+
 def preprocess_images(greyL, greyR):
     """
     Perform relevant preprocessing steps to the greyscale images
@@ -47,6 +54,9 @@ def preprocess_images(greyL, greyR):
     """
     greyL = preprocess_image_power(greyL)
     greyR = preprocess_image_power(greyR)
+
+    greyL = preprocess_image_crop_irrelevant_regions(greyL)
+    greyR = preprocess_image_crop_irrelevant_regions(greyR)
 
     return greyL, greyR
 
@@ -97,10 +107,8 @@ def crop_disparity_map(disparity_scaled):
     """
     Crop disparity to crop out the left part where is no disparity, as this area
     is not seen by both cameras.
-    Also crop out the bottom area, where we see the front of the car bonnet.
     """
-    width = np.size(disparity_scaled, 1)
-    return disparity_scaled[0:390,135:width]
+    return disparity_scaled[:,135:]
 
 
 def display_disparity_window(disparity_scaled, max_disparity):

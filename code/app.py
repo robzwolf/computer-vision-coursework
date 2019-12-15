@@ -76,8 +76,9 @@ max_disparity = 128
 # Playback Controls
 ##########################################
 
-# Display full or cropped disparity image
-crop_disparity = False
+# Display full (False) or cropped (True) disparity image
+# - Default to cropped so that we don't try to compute disparity for the car bonnet or the sky
+crop_disparity = True
 
 # Pause until key press after each image
 pause_playback = False
@@ -273,6 +274,7 @@ def loop_through_files():
                                 Z.append(Z_single)
                         except IndexError:
                             # If we couldn't access disparity_map[y][x] for some reason, just continue to the next pixel
+                            # We'd get an IndexError if we're accessing a part of the disparity map that's cropped out.
                             continue
 
                 # Convert Z to a formatted number calculating a median of the middle portion of box pixels
