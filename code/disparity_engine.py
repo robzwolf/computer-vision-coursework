@@ -17,7 +17,6 @@
 
 import cv2
 import numpy as np
-import helpers
 
 
 def convert_to_greyscale(imgL, imgR):
@@ -26,31 +25,6 @@ def convert_to_greyscale(imgL, imgR):
     """
     greyL = cv2.cvtColor(imgL, cv2.COLOR_BGR2GRAY)
     greyR = cv2.cvtColor(imgR, cv2.COLOR_BGR2GRAY)
-
-    return greyL, greyR
-
-
-def preprocess_image_power(img, power=0.75):
-    """
-    Performing preprocessing by raising to the power subjectively appears to
-    improve subsequent disparity calculation.
-    @param img: The image to preprocess
-    @param power: The power to raise each value to
-    @return: The image after preprocessing
-    """
-    return np.power(img, power).astype('uint8')
-
-
-def preprocess_images(greyL, greyR):
-    """
-    Perform relevant preprocessing steps to the greyscale images
-    before calculating the disparity.
-    """
-    greyL = preprocess_image_power(greyL)
-    greyR = preprocess_image_power(greyR)
-
-    greyL = helpers.preprocess_image_crop_irrelevant_regions(greyL)
-    greyR = helpers.preprocess_image_crop_irrelevant_regions(greyR)
 
     return greyL, greyR
 
@@ -102,7 +76,7 @@ def crop_disparity_map(disparity_scaled):
     Crop disparity to crop out the left part where is no disparity, as this area
     is not seen by both cameras.
     """
-    return disparity_scaled[:,135:]
+    return disparity_scaled[:,160:]
 
 
 def display_disparity_window(disparity_scaled):

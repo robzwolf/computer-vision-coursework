@@ -15,16 +15,15 @@
 import disparity_engine
 import os
 import cv2
-import numpy as np
+import helpers
+import preprocessor
+import yolo_engine
 
 ############################################################################
 # LOCATION OF DATA SET
 ############################################################################
 
 # Change this to specify the location of the master dataset
-import helpers
-import yolo_engine
-
 master_path_to_dataset = '../TTBB-durham-02-10-17-sub10'
 
 # Name of the left images within the master dataset directory
@@ -71,7 +70,7 @@ input_height = 416
 
 # Maximum allowable disparity
 # Must be a multiple of 16
-max_disparity = 192
+max_disparity = 160
 
 ##########################################
 # Playback Controls
@@ -123,7 +122,7 @@ def get_disparity(imgL, imgR):
     greyL, greyR = disparity_engine.convert_to_greyscale(imgL, imgR)
 
     # Perform preprocessing
-    greyL, greyR = disparity_engine.preprocess_images(greyL, greyR)
+    greyL, greyR = preprocessor.preprocess_images(greyL, greyR)
 
     # Set up the disparity stereo processor and compute the disparity.
     disparity = disparity_engine.compute_disparity(greyL, greyR, max_disparity)
@@ -228,14 +227,15 @@ def loop_through_files():
             print('-- Files loaded successfully!')
             print()
 
+            # Crop main image so we only detect objects in the uncropped area
+            cropped_imgL = preprocessor.preprocess_image_crop_irrelevant_regions(imgL)
+            cropped_imgR = preprocessor.preprocess_image_crop_irrelevant_regions(imgR)
+
             # Calculate the disparity map
-            disparity_map = get_disparity(imgL, imgR)
+            disparity_map = get_disparity(cropped_imgL, cropped_imgR)
 
             # Display the disparity map as an image
             disparity_engine.display_disparity_window(disparity_map)
-
-            # Crop main image so we only detect objects in the uncropped area
-            cropped_imgL = helpers.preprocess_image_crop_irrelevant_regions(imgL)
 
             # Create a 4D tensor (OpenCV 'blob') from image frame (pixels scaled 0 to 1, image resized)
             tensor = cv2.dnn.blobFromImage(cropped_imgL, 1 / 255, (input_width, input_height))

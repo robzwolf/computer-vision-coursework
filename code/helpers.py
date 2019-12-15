@@ -89,8 +89,3 @@ def random_colour():
     return blue, green, red
 
 
-def preprocess_image_crop_irrelevant_regions(img):
-    """
-    Crop out regions of the image where we shouldn't perform processing.
-    """
-    return img[crop_top:crop_bottom]
