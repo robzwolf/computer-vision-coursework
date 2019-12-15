@@ -68,10 +68,6 @@ input_width = 416
 # Height of network's input image
 input_height = 416
 
-# Maximum allowable disparity
-# Must be a multiple of 16
-max_disparity = 160
-
 ##########################################
 # Playback Controls
 ##########################################
@@ -103,42 +99,6 @@ full_path_directory_right = os.path.join(master_path_to_dataset, directory_to_cy
 
 # Get a list of the left image files and sort them (by timestamp in filename)
 left_file_list = sorted(os.listdir(full_path_directory_left))
-
-
-def get_disparity(imgL, imgR):
-    """
-    Produce a disparity map for the two images.
-    Take a left image and a right image, and using the methods in disparity_engine,
-    and the stereo processor in OpenCV (specifically, a modified version of the H.
-    Hirschmuller algorithm [Hirschmuller, 2008]), calculate a disparity map and
-    return it.
-    @param imgL: The left image
-    @param imgR: The right image
-    @return: The disparity map
-    """
-
-    # Disparity matching works on greyscale, so start by converting to greyscale.
-    # Do this for both images as they're both given as 3-channel RGB images.
-    greyL, greyR = helpers.convert_to_greyscale(imgL, imgR)
-
-    # Perform pre-processing
-    greyL = preprocessor.preprocess_image_for_disparity(greyL)
-    greyR = preprocessor.preprocess_image_for_disparity(greyR)
-
-    # Set up the disparity stereo processor and compute the disparity.
-    disparity = disparity_engine.compute_disparity(greyL, greyR, max_disparity)
-
-    # Filter out noise and speckles
-    disparity_engine.filter_speckles(disparity, max_disparity)
-
-    # Scale the disparity to 8-bit for viewing as an image.
-    disparity_scaled = disparity_engine.scale_disparity_to_8_bit(disparity, max_disparity)
-
-    # If user wants to crop the disparity, then crop out the left side and the car bonnet.
-    if crop_disparity:
-        disparity_scaled = disparity_engine.crop_disparity_map(disparity_scaled)
-
-    return disparity_scaled
 
 
 def get_right_filename_from_left(filename_left):
@@ -233,7 +193,7 @@ def loop_through_files():
             cropped_imgR = preprocessor.preprocess_image_crop_irrelevant_regions(imgR)
 
             # Calculate the disparity map
-            disparity_map = get_disparity(cropped_imgL, cropped_imgR)
+            disparity_map = disparity_engine.get_disparity(cropped_imgL, cropped_imgR, crop_disparity)
 
             # Display the disparity map as an image
             disparity_engine.display_disparity_window(disparity_map)

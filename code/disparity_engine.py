@@ -17,9 +17,19 @@
 
 import cv2
 import numpy as np
+import helpers
+import preprocessor
+
+######################
+# Important Constants
+######################
+
+# Maximum allowable disparity
+# Must be a multiple of 16
+max_disparity = 160
 
 
-def compute_disparity(greyL, greyR, max_disparity):
+def compute_disparity(greyL, greyR):
     """
     Set up the disparity stereo processor and compute the disparity image.
     """
@@ -37,7 +47,7 @@ def compute_disparity(greyL, greyR, max_disparity):
     return stereo_processor.compute(greyL, greyR)
 
 
-def filter_speckles(disparity, max_disparity):
+def filter_speckles(disparity):
     """
     Filter out noise and speckles.
     """
@@ -47,7 +57,7 @@ def filter_speckles(disparity, max_disparity):
     cv2.filterSpeckles(disparity, 0, max_speckle_size, max_disparity - disparity_noise_filter)
 
 
-def scale_disparity_to_8_bit(disparity, max_disparity):
+def scale_disparity_to_8_bit(disparity):
     """
     Scales the disparity to 8-bit for viewing.
     """
@@ -80,3 +90,40 @@ def display_disparity_window(disparity_scaled):
     cv2.normalize(disparity_scaled, disparity_to_display, 0, 255, cv2.NORM_MINMAX)
 
     cv2.imshow('Disparity', disparity_to_display)
+
+
+def get_disparity(imgL, imgR, crop_disparity):
+    """
+    Produce a disparity map for the two images.
+    Take a left image and a right image, and using the methods in disparity_engine,
+    and the stereo processor in OpenCV (specifically, a modified version of the H.
+    Hirschmuller algorithm [Hirschmuller, 2008]), calculate a disparity map and
+    return it.
+    @param imgL: The left image
+    @param imgR: The right image
+    @param crop_disparity: Whether we should crop the left side off the disparity
+    @return: The disparity map
+    """
+
+    # Disparity matching works on greyscale, so start by converting to greyscale.
+    # Do this for both images as they're both given as 3-channel RGB images.
+    greyL, greyR = helpers.convert_to_greyscale(imgL, imgR)
+
+    # Perform pre-processing
+    greyL = preprocessor.preprocess_image_for_disparity(greyL)
+    greyR = preprocessor.preprocess_image_for_disparity(greyR)
+
+    # Set up the disparity stereo processor and compute the disparity.
+    disparity = compute_disparity(greyL, greyR)
+
+    # Filter out noise and speckles
+    filter_speckles(disparity)
+
+    # Scale the disparity to 8-bit for viewing as an image.
+    disparity_scaled = scale_disparity_to_8_bit(disparity)
+
+    # If user wants to crop the disparity, then crop out the left side and the car bonnet.
+    if crop_disparity:
+        disparity_scaled = crop_disparity_map(disparity_scaled)
+
+    return disparity_scaled
