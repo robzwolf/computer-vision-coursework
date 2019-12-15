@@ -42,10 +42,17 @@ def preprocess_image_for_yolo(img):
     # Raise each pixel to a power.
     # img = preprocess_image_power(img)
 
+    # Use CLAHE
+    img = preprocess_clahe(img)
+
     return img
 
 
 def preprocess_equalise_histogram(img):
+    """
+    Equalise the histogram of the image, to increase contrast and
+    use the full range of available values.
+    """
     destination = np.copy(img)
     cv2.equalizeHist(img, destination)
     return destination
@@ -60,6 +67,30 @@ def preprocess_image_power(img, power=0.75):
     @return: The image after preprocessing
     """
     return np.power(img, power).astype('uint8')
+
+
+def preprocess_clahe(img):
+    """
+    Use CLAHE (contrast limited adaptive histogram equalisation) to equalise histogram in
+    specific regions of the image.
+    We only apply CLAHE to the Lightness of the image.
+    Uses: https://stackoverflow.com/a/47370615/2176546
+    """
+
+    clahe = cv2.createCLAHE(2.0, tileGridSize=(8,8))
+    
+    # Convert the image to LAB colour space
+    lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+    lab_planes = cv2.split(lab)
+    
+    # Apply CLAHE to the Lightness channel of the LAB image
+    lab_planes[0] = clahe.apply(lab_planes[0])
+    
+    # Convert from LAB back to RGB
+    lab = cv2.merge(lab_planes)
+    clahe_img = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
+
+    return clahe_img
 
 
 def preprocess_image_crop_irrelevant_regions(img):
