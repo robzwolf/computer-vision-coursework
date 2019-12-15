@@ -57,9 +57,19 @@ def get_formatted_median(Z):
     # objects that are a long way from the camera.
     max_distance = 45
     if Z and statistics.median(Z) < max_distance:
-        return str(round(statistics.median(Z), 2)) + ' m'
+        return format_median(get_median(Z))
     else:
         return ''
+
+
+def format_median(median):
+    return str(round(median, 2)) + ' m'
+
+
+def get_median(Z):
+    max_distance = 45
+    if Z and statistics.median(Z) < max_distance:
+        return statistics.median(Z)
 
 
 def random_number_between(min, max, integer=True):

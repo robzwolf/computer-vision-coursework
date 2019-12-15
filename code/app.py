@@ -213,6 +213,9 @@ def loop_through_files():
             # Remove the bounding boxes with lower confidence
             class_IDs, confidences, boxes = yolo_engine.postprocess(preprocessed_cropped_imgL, results, confidence_threshold, nms_threshold)
 
+            # Closest object (start with something really high)
+            closest_object_distance = 0
+
             # Get indices (objects) and draw info and distance label for each one
             indices = cv2.dnn.NMSBoxes(boxes, confidences, confidence_threshold, nms_threshold)
             for i in indices:
@@ -245,6 +248,11 @@ def loop_through_files():
                             # cropped out.
                             continue
 
+                # Work out which object is closest to the camera
+                median = helpers.get_median(Z)
+                if closest_object_distance == 0 or (median and median < closest_object_distance):
+                    closest_object_distance = median
+
                 # Convert Z to a formatted number calculating a median of the middle portion of box pixels
                 formatted_depth = helpers.get_formatted_median(Z)
 
@@ -256,6 +264,10 @@ def loop_through_files():
                 yolo_engine.draw_bounding_box(imgL, classes[class_IDs[i]], confidences[i], left, top + helpers.crop_top,
                                               left + width, top + height + helpers.crop_top, box_outline_colour,
                                               formatted_depth)
+
+            print()
+            print('Nearest detected scene object (' + helpers.format_median(closest_object_distance) + ')')
+            print()
 
             cv2.imshow('YOLOv3 Object Detection using "' + weights_file + '"', imgL)
 
