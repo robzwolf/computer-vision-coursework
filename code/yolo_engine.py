@@ -39,9 +39,9 @@ def draw_bounding_box(output_image, class_name, confidence, left, top, right, bo
     cv2.rectangle(output_image, (left, top), (right, bottom), colour, box_thickness)
 
     # Construct label
-    label_text = f'{class_name} ({round(confidence * 100, 0)}%): {depth}'
+    label_text = f'{class_name} ({int(round(confidence * 100, 0))}%): {depth}'
 
-    font_scale = 0.5
+    font_scale = 0.33
     font_thickness = 1
     font_name = cv2.FONT_HERSHEY_SIMPLEX
     label_size, base_line = cv2.getTextSize(label_text, font_name, font_scale, font_thickness)
@@ -54,7 +54,7 @@ def draw_bounding_box(output_image, class_name, confidence, left, top, right, bo
 
     # Draw the actual label text
     black = (0, 0, 0)
-    cv2.putText(output_image, label_text, (left, top), font_name, font_scale, black, font_thickness)
+    cv2.putText(output_image, label_text, (left, top), font_name, font_scale * 1.5, black, font_thickness)
 
 
 def postprocess(image, results, threshold_confidence, threshold_nms):
