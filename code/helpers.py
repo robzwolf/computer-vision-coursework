@@ -57,7 +57,7 @@ def get_formatted_median(Z):
     # objects that are a long way from the camera.
     max_distance = 45
     if Z and statistics.median(Z) < max_distance:
-        return f'{round(statistics.median(Z), 2)} m'
+        return str(round(statistics.median(Z), 2)) + ' m'
     else:
         return ''
 

@@ -169,8 +169,8 @@ def loop_through_files():
         print('#############################################################################')
         print()
         print('Processing:')
-        print(f'    {full_path_filename_left}')
-        print(f'    {full_path_filename_right}')
+        print('    ' + full_path_filename_left)
+        print('    ' + full_path_filename_right)
         print()
 
         # Check the left file is a PNG image
@@ -257,7 +257,7 @@ def loop_through_files():
                                               left + width, top + height + helpers.crop_top, box_outline_colour,
                                               formatted_depth)
 
-            cv2.imshow(f'YOLOv3 Object Detection using "{weights_file}"', imgL)
+            cv2.imshow('YOLOv3 Object Detection using "' + weights_file + '"', imgL)
 
             # Wait 40ms (i.e. 1000 ms / 25 fps = 40 ms)
             key = cv2.waitKey(40 * (not pause_playback)) & 0xFF
